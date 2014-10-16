@@ -1,0 +1,203 @@
+---
+- hosts: all
+  tasks:
+    - name: test
+      shell: pwd
+      register: result
+
+    - name: debug
+      debug: var=result
+
+    # Contains aliases we use during development
+    - name: Setting up Bash profile settings
+      template: src=templates/bash_profile.j2 dest=/home/vagrant/.bash_profile mode=0644
+      notify: source bash_profile
+
+      # Move script to install ruby
+    - name: Moving bootstrap script
+      template: src=templates/bootstrap.j2 dest=/home/vagrant/bootstrap.sh owner=vagrant group=vagrant mode=0664
+
+
+    # # Make sure the packagemanager lists are up-to-date
+    # - name: Updating package source-list
+    #   apt: update_cache=yes
+
+    # # Use automatic time syncing
+    # - name: Installing NTP
+    #   apt: state=present name={{ item }}
+    #   tags: ntp
+    #   with_items:
+    #     - ntp
+    #     - ntpdate
+
+    # # Make sure the correct timezone is set
+    # - name: Set time-zone variables
+    #   copy: content='Europe/Amsterdam' dest=/etc/timezone owner=root group=root mode=0644 backup=yes
+
+    - name: Installing basic packages
+      apt: state=installed name={{ item }}
+      with_items:
+        - git
+        - vim
+        - nfs-common
+        - openssl
+        - portmap
+        - nmap
+        - tzdata
+        - curl
+        - libpq-dev
+
+    - name: Install RVM
+      shell: curl -sSL https://get.rvm.io | bash 
+      args: 
+        creates: /home/vagrant/.rvm/bin/rvm
+      notify: bootstrap
+
+    # Enables syntax highlighting by default
+    - name: Setting VIM settings
+      template: src=templates/vimrc.j2 dest=/home/vagrant/.vimrc owner=vagrant group=vagrant mode=0644
+
+    - name: Make sure Git has some color
+      shell: git config --global color.ui true
+
+    - name: Let Git play nice with NFS
+      shell: git config --global core.preloadindex true
+
+    # These tasks install Apache and PHP modules.
+
+    # # Setup PHP repository
+    # - name: Setup PHP 5.5 repository
+    #   apt_repository: repo=ppa:ondrej/php5 update_cache=yes
+
+    # # Setup basic Apache and PHP packages
+    # - name: Installing Apache- and PHP-modules
+    #   apt: state=latest name={{ item }}
+    #   tags:
+    #     - apache
+    #     - php
+    #   with_items:
+    #     - apache2
+    #     - libapache2-mod-php5
+    #     - php5-cli
+    #     - php5-common
+    #     - php5-curl
+    #     - php5-gd
+    #     - php5-gmp
+    #     - php5-intl
+    #     - php5-mcrypt
+    #     - php5-memcache
+    #     - php5-memcached
+    #     - php5-mysql
+    #     - php5-xdebug
+    #     - php5-redis
+    #     - php-pear
+    #     - php-xml-parser
+
+    # # Make sure PHP has strict errors enabled
+    # - name: Enable PHP strict errors
+    #   tags: php
+    #   lineinfile: dest=/etc/php5/apache2/php.ini regexp='^error_reporting\s?=' line='error_reporting = E_ALL | E_STRICT'
+
+    # # Make sure PHP has display errors enabled
+    # - name: Enable PHP display errors
+    #   tags: php
+    #   lineinfile: dest=/etc/php5/apache2/php.ini regexp='^display_errors\s?=' line='display_errors = On'
+
+    # # Make sure PHP has HTML errors enabled
+    # - name: Enable PHP HTML errors for XDebug
+    #   tags: php
+    #   lineinfile: dest=/etc/php5/apache2/php.ini regexp='^html_errors\s?=' line='html_errors = On'
+
+    # # XDebug additional configuration for remote debugging
+    # - name: XDebug additional configuration for remote debugging
+    #   tags: php
+    #   lineinfile:
+    #     dest=/etc/php5/cli/conf.d/20-xdebug.ini
+    #     line="{{ item }}"
+    #   with_items:
+    #      - xdebug.idekey=PHPSTORM
+    #      - xdebug.remote_host=10.250.250.1
+    #      - xdebug.remote_enable=1
+    #      - xdebug.file_link_format=phpstorminsided://%f:%l
+
+    # # Download composer
+    # - name: Checking if Composer is present
+    #   shell: curl -sS https://getcomposer.org/installer | php creates=/usr/local/bin/composer
+
+    # # Place Composer in /usr/local/bin
+    # - name: Making sure Composer is reachable globally
+    #   shell: mv /home/vagrant/composer.phar /usr/local/bin/composer creates=/usr/local/bin/composer
+
+    # # Make sure we have the latest Composer version
+    # - name: Update Composer to the latest version
+    #   command: composer self-update
+
+    # - name: Global variable with username on host machine
+    #   lineinfile:
+    #     dest=/etc/environment
+    #     line=HOST_USERNAME={{ host_username }}
+
+    # - name: Installing redis
+    #   tags: redis
+    #   apt: state=latest name={{ item }}
+    #   with_items:
+    #     - redis-server
+
+    # - name: Redis maxmemory 10Mb
+    #   tags: redis
+    #   lineinfile: dest=/etc/redis/redis.conf line='maxmemory 16384000' regexp='^maxmemory'
+
+    # - name: ensure ntpd is at the latest version
+    #   apt: pkg=ntp state=latest
+    #   notify:
+    #     - restart ntp
+
+    - name: Installing Nmap
+      apt: pkg=nmap state=installed
+
+    - name: Installing Vim
+      apt: pkg=vim state=installed
+
+      # - name: Installing MySQL package
+      #   apt: name=mysql-server state=latest
+      #   tags: mysql
+      #   with_items:
+      #     - mysql
+      #     - mysql-server
+
+      # - name: Install MySQL-python
+      #   apt: name=python-mysqldb state=installed
+
+      # - name: Start the MySQL service
+      #   action: service name=mysql state=started
+
+      # # Make sure we have the necessary MySQL users we need
+      # - name: Changing root password
+      #   mysql_user: login_user=root
+      #           login_password=root
+      #           name=root
+      #           password=root
+      #           priv=*.*:ALL,GRANT
+      #           host=127.0.0.1
+      #   ignore_errors: true
+
+      #   # Set MySQL timezone data
+      # - name: Set MySQL Timezone
+      #   shell: mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot -proot mysql
+      #   tags: mysql
+
+  handlers:
+    - name: source bash_profile
+      shell: source /home/vagrant/.bash_profile executable=/bin/bash
+
+    - name: bootstrap
+      shell: sh /home/vagrant/bootstrap.sh executable=/bin/bash
+
+    - name: restart ntp
+      service: name=ntp state=restarted
+
+    - name: restart apache
+      service: name=apache state=restarted
+
+    - name: Update time-zone
+      command: dpkg-reconfigure --frontend noninteractive tzdata
