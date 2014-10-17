@@ -46,6 +46,14 @@
         - tzdata
         - curl
         - libpq-dev
+        - rake
+        - nodejs
+
+    - name: Installing PostgreSQL
+      apt: state=installed name={{ item }}
+      with_items:
+        - postgresql
+        - postgresql-contrib
 
     - name: Install RVM
       shell: curl -sSL https://get.rvm.io | bash 
