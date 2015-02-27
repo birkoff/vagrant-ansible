@@ -1,0 +1,40 @@
+---
+- name: test
+  shell: pwd
+  register: result
+
+- name: debug
+  debug: var=result
+
+# Contains aliases we use during development
+- name: Setting up Bash profile settings
+  template: src=bash_profile.j2 dest=/home/vagrant/.bash_profile owner=vagrant group=vagrant mode=0644
+  notify: source bash_profile
+
+- name: Installing basic packages
+  apt: state=installed name={{ item }}
+  with_items:
+    - git
+    - vim
+    - nfs-common
+    - openssl
+    - portmap
+    - nmap
+    - tzdata
+    - curl
+    - libpq-dev
+    - rake
+    - nodejs
+    - bundler
+    - npm
+    - nodejs-legacy
+
+# Enables syntax highlighting by default
+- name: Setting VIM settings
+  template: src=vimrc.j2 dest=/home/vagrant/.vimrc owner=vagrant group=vagrant mode=0644
+
+- name: Make sure Git has some color
+  shell: git config --global color.ui true
+
+- name: Let Git play nice with NFS
+  shell: git config --global core.preloadindex true

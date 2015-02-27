@@ -1,0 +1,40 @@
+---
+# This playbook will install mysql and create db user and give permissions.
+
+- name: Installing MySQL package
+  apt: name={{ item }} state=installed
+  tags: mysql
+  with_items:
+   - mysql-server
+   - python-mysqldb
+
+# Set MySQL timezone data
+- name: Set MySQL Timezone
+  shell: mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -uroot mysql
+  tags: mysql
+
+# Make sure we have the necessary MySQL users we need
+- name: Changing root password
+  mysql_user: name={{ username }} password={{ password }} priv=*.*:ALL,GRANT state=present
+  tags: mysql
+
+# Make sure ansible will use the newly created credentials
+- name: Copying credential file
+  tags: mysql
+  template: src=my.cnf.j2 dest={{ item.location }} owner={{ item.user }} mode=0600
+  with_items:
+   - user: root
+     location: /root/.my.cnf
+   - user: vagrant
+     location: /home/vagrant/.my.cnf
+
+# Restart MySQL
+- name: Restarting MySQL
+  tags: mysql
+  service: name=mysql state=restarted
+
+# # Create needed databases
+# - name: Creating databases
+#   mysql_db: state=present name={{ item }} encoding=utf8
+#   tags: mysql
+#   with_items: mysql.databases

@@ -1,0 +1,7 @@
+---
+#handlers:
+- name: source bash_profile
+  shell: source /home/vagrant/.bash_profile executable=/bin/bash
+
+- name: restart ntp
+  service: name=ntp state=restarted

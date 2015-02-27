@@ -1,0 +1,48 @@
+---
+# These tasks install Apache and PHP modules.
+
+# # Setup PHP repository
+- name: Setup PHP 5.5 repository
+  apt_repository: repo=ppa:ondrej/php5 update_cache=yes
+
+# Setup basic Apache and PHP packages
+- name: Installing Apache- and PHP-modules
+  apt: state=latest name={{ item }}
+  tags:
+    - apache
+    - php
+  with_items:
+    - apache2
+    - libapache2-mod-php5
+    - php5-cli
+    - php5-common
+    - php5-curl
+    - php5-gd
+    - php5-gmp
+    - php5-intl
+    - php5-mcrypt
+    - php5-memcache
+    - php5-memcached
+    - php5-mysql
+    - php5-xdebug
+    - php5-redis
+    - php-pear
+    - php-xml-parser
+
+# Make sure PHP has strict errors enabled
+- name: Enable PHP strict errors
+  tags: php
+  lineinfile: dest=/etc/php5/apache2/php.ini regexp='^error_reporting\s?=' line='error_reporting = E_ALL | E_STRICT'
+
+# Make sure PHP has display errors enabled
+- name: Enable PHP display errors
+  tags: php
+  lineinfile: dest=/etc/php5/apache2/php.ini regexp='^display_errors\s?=' line='display_errors = On'
+
+# Make sure PHP has HTML errors enabled
+- name: Enable PHP HTML errors for XDebug
+  tags: php
+  lineinfile: dest=/etc/php5/apache2/php.ini regexp='^html_errors\s?=' line='html_errors = On'
+
+# Example from Ansible Playbooks
+- copy: src=phpinfo.php dest=/var/www/html owner=vagrant group=vagrant mode=0644

@@ -1,0 +1,43 @@
+
+- name: Setup PostgreSQL database
+  hosts: dbserver
+  remote_user: vagrant
+  roles:
+    - database
+
+- name: Setup Ruby Dev Machne
+  hosts: rubydev
+  remote_user: vagrant
+  roles:
+    - database
+
+
+    - name: Installing PostgreSQL
+      apt: state=installed name={{ item }}
+      with_items:
+        - postgresql
+        - postgresql-contrib
+
+    - name: Install RVM
+      shell: curl -sSL https://get.rvm.io | bash 
+      args: 
+        creates: /home/vagrant/.rvm/bin/rvm
+      notify: bootstrap
+
+  handlers:
+    - name: source bash_profile
+      shell: source /home/vagrant/.bash_profile executable=/bin/bash
+
+    - name: bootstrap
+      shell: sh /home/vagrant/bootstrap.sh executable=/bin/bash
+
+    - name: restart ntp
+      service: name=ntp state=restarted
+
+    - name: restart apache
+      service: name=apache state=restarted
+
+    - name: Update time-zone
+      command: dpkg-reconfigure --frontend noninteractive tzdata
+
+

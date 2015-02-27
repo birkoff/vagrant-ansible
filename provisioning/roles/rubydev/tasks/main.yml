@@ -1,0 +1,7 @@
+---
+
+- name: Install RVM
+      shell: curl -sSL https://get.rvm.io | bash 
+      args: 
+        creates: /home/vagrant/.rvm/bin/rvm
+      notify: bootstrap

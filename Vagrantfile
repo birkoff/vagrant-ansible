@@ -36,6 +36,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.synced_folder folder[:host], folder[:guest], type: 'nfs'
   end
 
+  # Ansible provisioning
   config.vm.provision "ansible" do |ansible|
     # Perform sudo commands
     ansible.sudo = true
@@ -43,6 +44,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Location of the playbook
     ansible.playbook = "provisioning/playbook.yml"
+
+    # Specify which groups the machine is in
+    ansible.groups = {
+      'webserver' => ['blueberryh_dev'],
+      'dbserver' => ['blueberryh_dev'],
+      'all_groups:children' => ['webserver', 'dbserver'],
+      'dbserver:vars' => {"user" => "root", "password" => "root", "database" => "blueberryh_dev"}
+    }
 
     # Some extra configuration
     ansible.extra_vars = {
