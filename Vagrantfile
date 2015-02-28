@@ -31,7 +31,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   [
     { :host => './',              :guest => '/vagrant' },
     { :host => '~/.ssh',          :guest => '/.ssh' },
-    { :host => '~/workspace/BlueBerry',     :guest => '/var/www/BlueBerry' },
+    { :host => '~/workspace/doctrine',     :guest => '/var/www/html/doctrine' },
   ].each do |folder|
     config.vm.synced_folder folder[:host], folder[:guest], type: 'nfs'
   end
@@ -48,9 +48,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Specify which groups the machine is in
     ansible.groups = {
       'webserver' => ['blueberryh_dev'],
-      'dbserver' => ['blueberryh_dev'],
-      'all_groups:children' => ['webserver', 'dbserver'],
-      'dbserver:vars' => {"user" => "root", "password" => "root", "database" => "blueberryh_dev"}
+      'mysqlserver' => ['blueberryh_dev'],
+      'all_groups:children' => ['webserver', 'mysqlserver']
     }
 
     # Some extra configuration

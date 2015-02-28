@@ -44,5 +44,19 @@
   tags: php
   lineinfile: dest=/etc/php5/apache2/php.ini regexp='^html_errors\s?=' line='html_errors = On'
 
-# Example from Ansible Playbooks
+# Copy PHP info page
 - copy: src=phpinfo.php dest=/var/www/html owner=vagrant group=vagrant mode=0644
+
+# Download composer
+- name: Checking if Composer is present
+  shell: curl -sS https://getcomposer.org/installer | php creates=/usr/local/bin/composer
+
+# Place Composer in /usr/local/bin
+- name: Making sure Composer is reachable globally
+  shell: mv /home/vagrant/composer.phar /usr/local/bin/composer creates=/usr/local/bin/composer
+
+# Make sure we have the latest Composer version
+- name: Update Composer to the latest version
+  command: composer self-update
+  register: composer_self_update
+  changed_when: "'Updating' in composer_self_update.stdout"

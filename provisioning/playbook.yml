@@ -14,17 +14,11 @@
     - webserver
 
 - name: Setup MySQL database
-  hosts: dbserver
+  hosts: mysqlserver
   user: vagrant
   roles:
-    - database
+    - mysqlserver
   vars:
     username: root
     password: root
     database: blueberryh_dev
-
-- name: Setup Ruby and Ruby on Rails Development Env
-  hosts: rubydev
-  user: vagrant
-  roles:
-    - rubydev
