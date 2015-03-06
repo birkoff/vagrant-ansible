@@ -1,0 +1,4 @@
+---
+#handlers:
+- name: Restarting ElasticMQ
+  service: name=elasticmq state=restarted

@@ -22,3 +22,11 @@
     username: root
     password: root
     database: blueberryh_dev
+
+- name: Setup Elasticmq Message queueing system
+  hosts: sqsserver
+  user: vagrant
+  roles:
+    - sqsserver
+  vars:
+    wgeturl: https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.8.7.jar

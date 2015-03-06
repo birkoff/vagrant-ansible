@@ -1,0 +1,15 @@
+---
+- name: Installing openjdk
+  apt: state=installed name={{ item }}
+  with_items:
+    - openjdk-7-jre-headless
+
+- name: download ElasticMQ stand-alone distribution
+  get_url: url={{ wgeturl }} dest=/usr/local/sbin/elasticmq-server.jar owner=root group=root mode=0644
+
+- name: Installing elasticmq init.d script
+  copy: src=elasticmq.j2 dest=/etc/init.d/elasticmq owner=root group=root mode=0755
+
+- name: Enable elasticmq init
+  shell: /usr/sbin/update-rc.d elasticmq defaults
+  notify: Restarting ElasticMQ
